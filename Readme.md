@@ -14,7 +14,7 @@
 ### 安装工具
 
 ```bash
-sudo apt install stress
+sudo apt-get install -y stress
 sudo python3 -m pip install stressberry --break-system-packages
 ```
 
