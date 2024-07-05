@@ -15,25 +15,30 @@
 
 ```bash
 sudo apt-get install -y stress
-sudo python3 -m pip install stressberry --break-system-packages
+sudo python3 -m pip install stressberry adafruit-circuitpython-dht --break-system-packages
 ```
 
 ### 测试
 
+在树莓派GPIO链接一个DHT11传感器，3V3，GND，GPIO18（如果要修改引脚，就把下面的18给成你的引脚号）。
+
+还要把.dat 改成合适的描述这个测试的名字。
+把-n后面的名字改成描述这个测试的名称，名字会在导出的图表上显示。
+
 ```bash
-stressberry-run pironman-5-gpio-fan-mode-0-off.dat -n OFF
+stressberry-run -a 11 18 pironman-5-mini-fan-quiet-acrylic-open.dat -n "Pironman 5 Mini Fan Quiet Acrylic Open"
 ```
 
 ### 生成图表
 
 ```bash
-stressberry-plot pironman-5-gpio-fan-mode-0-off.dat -o pironman-5-gpio-fan-mode-0-off.png
+stressberry-plot -d 300 --delta-t pironman-5-mini-fan-quiet-acrylic-open.dat -o pironman-5-gpio-fan-mode-0-off.png
 ``` 
 
 ### 多个数据合成一张图表
     
 ```bash
-stressberry-plot \
+stressberry-plot -d 300 --delta-t \
 pironman-5-gpio-fan-mode-0-off.dat \
 pironman-5-gpio-fan-mode-1-quiet.dat \
 pironman-5-gpio-fan-mode-2-balanced.dat \
