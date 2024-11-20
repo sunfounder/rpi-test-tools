@@ -1,0 +1,1 @@
+扩展板,硬盘,顺序读 1M Q8 T1(MB/s),顺序读 1M Q1 T1(MB/s),随机读 4K Q32 T1(MB/s),随机读 4K Q1 T1(MB/s),顺序写 1M Q8 T1(MB/s),顺序写 1M Q1 T1(MB/s),随机写 4K Q32 T1(MB/s),随机写 4K Q1 T1(MB/s)
