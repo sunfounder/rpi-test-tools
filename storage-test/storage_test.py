@@ -63,7 +63,7 @@ msg = None
 
 parser = argparse.ArgumentParser(description='磁盘测速工具')
 parser.add_argument('-l', '--language', type=str, default='zh', help='语言 (en/zh), 默认 zh')
-parser.add_argument('-p', '--path', type=str, default='./', help='测试路径, 默认 ./')
+parser.add_argument('-p', '--path', type=str, default=None, help='测试路径, 默认 ./')
 parser.add_argument('-t', '--type', type=str, default='simple', help='测试类型 (simple/hdd/ssd), 默认 simple')
 parser.add_argument('-s', '--size', type=str, default='5G', help='测试文件大小, 默认 5G')
 parser.add_argument('-T', '--times', type=int, default=1, help='测试次数, 默认 1')
@@ -123,7 +123,7 @@ def get_speed_from_json(json_str):
 
 def create_fio_job(ioengine='libaio', blocksize='1M', thread=1, queues=1, rw='read'):
     name = f"{get_rw_mode_string(rw)}_{blocksize}_Q{queues}_T{thread}"
-    command = f"sudo fio --name={name} --gtod_reduce=1 --ioengine={ioengine} --directory={{path}} --size={{size}} --direct=1 --output-format=json --rw={rw} --bs={blocksize} --numjobs={thread} --iodepth={queues}"
+    command = f"fio --name={name} --filename=test --gtod_reduce=1 --ioengine={ioengine} --size={{size}} --direct=1 --output-format=json --rw={rw} --bs={blocksize} --numjobs={thread} --iodepth={queues}"
     name = name.replace("_", " ")
     return name, command
 
@@ -156,7 +156,10 @@ def main():
     jobs = TYPES[args.type]
     for job in jobs:
         name, command = create_fio_job(**job)
-        command = command.format(path=test_path, size=args.size)
+        command = command.format(size=args.size)
+        if args.path is not None:
+            command += f" --directory={test_path}"
+        # print(command)
         spinner_message = f"{name}:"
         print(f"{spinner_message} ", end='', flush=True)  # 先打印测试名称
         speeds = []
