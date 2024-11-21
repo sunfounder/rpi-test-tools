@@ -6,8 +6,6 @@
     - [测试](#测试-1)
     - [生成图表](#生成图表)
     - [多个数据合成一张图表](#多个数据合成一张图表)
-  - [硬盘测试](#硬盘测试)
-    - [fio](#fio)
 
 
 ## 散热测试
@@ -67,24 +65,3 @@ rpi-official.dat \
 -o pironman-5-x-rpi-official.png
 ```
 
-
-## 硬盘测试
-
-### fio
-
-安装：
-```bash
-sudo apt-get install fio -y
-```
-
-测试：
-修改-p参数为需要测试的路径，比如/mnt/sda0。修改-t参数为hdd或ssd。
-
-
-```bash
-cd rpi-test-tools/storage-test
-# 中文测试命令
-sudo python3 storage_test.py zh -p /mnt/ssd0 -t hdd
-# 英文测试命令
-sudo python3 storage_test.py -p /mnt/sda0 -t ssd
-```
