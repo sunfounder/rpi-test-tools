@@ -111,7 +111,12 @@ def run_fio_command(command):
 
 def get_speed_from_json(json_str):
     result = None
-    data = json.loads(json_str)
+    try:
+        data = json.loads(json_str)
+    except json.JSONDecodeError as e:
+        print(f"Error: {e}")
+        print(f"JSON string: {json_str}")
+        quit()
     job = data["jobs"][0]
     rw = job["job options"]["rw"]
     if "rand" in rw:

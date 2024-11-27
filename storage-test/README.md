@@ -15,6 +15,7 @@ sudo apt-get install fio -y
 ```bash
 cd rpi-test-tools/storage-test
 # 中文测试命令
-sudo python3 storage_test.py
+python storage_test.py
 # 英文测试命令
+python storage_test.py -l en
 ```
