@@ -1,3 +1,10 @@
+# 
+# fio --randrepeat=1 --ioengine=libaio --direct=1 --gtod_reduce=1 --filename=test --bs=4k --iodepth=64 --size=5G --readwrite=read --name=read
+# fio --randrepeat=1 --ioengine=libaio --direct=1 --gtod_reduce=1 --filename=test --bs=4k --iodepth=64 --size=5G --readwrite=write --name=write
+# fio --randrepeat=1 --ioengine=libaio --direct=1 --gtod_reduce=1 --filename=test --bs=4k --iodepth=64 --size=5G --readwrite=randread --name=randread
+# fio --randrepeat=1 --ioengine=libaio --direct=1 --gtod_reduce=1 --filename=test --bs=4k --iodepth=64 --size=5G --readwrite=randwrite --name=randwrite
+
+
 import subprocess
 import argparse
 import threading
@@ -44,10 +51,16 @@ msgs = {
         'read_write_modes_write': 'Write',
         'read_write_modes_randwrite': 'Random write',
         'type_error': 'Unsupported disk type: {type}, supported types: {supported_types}',
-        'mode_error': 'Unsupported test mode: {mode}, supported modes: best/average',
-        'start_test': 'Disk speed test start, path: {path}. Press Ctrl+C to stop test.',
+        'mode_error': 'Unsupported test mode: {mode}, supported modes: best/mean',
+        'start_test': 'Disk speed test start. Press Ctrl+C to stop test.\n=====================\n  Test path: {path}\n  Value type: {type}\n  Test mode: {mode}\n  File size: {size}\n  Test times: {times}\n==========\n',
         'stop_test': 'Test stopped by user.',
         'language_error': 'Unsupported language: {language}, supported languages: en/zh',
+        'mode_best': 'Best speed',
+        'mode_mean':'Mean speed',
+        'mode_trimed_mean': 'Trimed mean speed',
+        'type_simple': 'Simple',
+        'type_hdd': 'HDD',
+        'type_ssd': 'SSD',
     },
     'zh': {
         'read_write_modes_read': '读',
@@ -55,10 +68,16 @@ msgs = {
         'read_write_modes_write': '写',
         'read_write_modes_randwrite': '随机写',
         'type_error': '不支持的磁盘类型：{type}, 支持的类型：{supported_types}',
-        'mode_error': '不支持的测试模式：{mode}, 支持的模式：best/average',
-        'start_test': '磁盘测速开始，路径：{path}。按 Ctrl+C 退出测速。',
+        'mode_error': '不支持的测试模式：{mode}, 支持的模式：best/mean',
+        'start_test': '磁盘测速开始。按 Ctrl+C 退出测速。\n=====================\n  测试路径：{path}\n  取值类型：{type}\n  测试模式：{mode}\n  文件大小：{size}\n  测试次数：{times}\n=====================\n',
         'stop_test': '测试已被用户终止。',
         'language_error': '不支持的语言：{language}, 支持的语言：en/zh',
+        'mode_best': '最佳速度',
+        'mode_mean': '平均速度',
+        'mode_trimed_mean': '去极值平均',
+        'type_simple': '简单',
+        'type_hdd': '机械硬盘',
+        'type_ssd': '固态硬盘',
     }
 }
 msg = None
@@ -67,9 +86,9 @@ parser = argparse.ArgumentParser(description='磁盘测速工具')
 parser.add_argument('-l', '--language', type=str, default='zh', help='语言 (en/zh), 默认 zh')
 parser.add_argument('-p', '--path', type=str, default=None, help='测试路径, 默认 ./')
 parser.add_argument('-t', '--type', type=str, default='simple', help='测试类型 (simple/hdd/ssd), 默认 simple')
-parser.add_argument('-s', '--size', type=str, default='1G', help='测试文件大小, 默认 5G')
-parser.add_argument('-T', '--times', type=int, default=5, help='测试次数, 默认 1')
-parser.add_argument('-m', '--mode', type=str, default='average', help='测试模式 (best/average), 默认 average')
+parser.add_argument('-s', '--size', type=str, default='5G', help='测试文件大小, 默认 5G')
+parser.add_argument('-T', '--times', type=int, default=3, help='测试次数, 默认 3')
+parser.add_argument('-m', '--mode', type=str, default='best', help='测试模式 (best/mean/trimed_mean), 默认 best')
 args = parser.parse_args()
 
 stop_spinner = True
@@ -134,6 +153,17 @@ def create_fio_job(ioengine='libaio', blocksize='1M', thread=1, queues=1, rw='re
     name = name.replace("_", " ")
     return name, command
 
+def best_speed(speeds):
+    return max(speeds)
+
+def mean_speed(speeds):
+    return round(sum(speeds) / len(speeds), 2)
+
+def trimed_mean_speed(speeds):
+    if len(speeds) < 3:
+        return mean_speed(speeds)
+    return round(sum(sorted(speeds)[1:-1]) / len(sorted(speeds)[1:-1]), 2)
+
 def main():
     global stop_spinner, spinner_message, msg
     result = []
@@ -152,14 +182,16 @@ def main():
         exit(1)
 
     if args.mode == "best":
-        func = max
-    elif args.mode == "average":
-        func = lambda x: round(sum(x) / len(x), 2)
+        func = best_speed
+    elif args.mode == "mean":
+        func = mean_speed
+    elif args.mode == "trimed_mean":
+        func = trimed_mean_speed
     else:
         print(msg['mode_error'].format(mode=args.mode))
         exit(1)
 
-    print(msg['start_test'].format(path=test_path))
+    print(msg['start_test'].format(path=test_path, type=msg[f"type_{args.type}"], mode=msg[f"mode_{args.mode}"], size=args.size, times=args.times))
     jobs = TYPES[args.type]
     for job in jobs:
         name, command = create_fio_job(**job)
