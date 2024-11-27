@@ -5,6 +5,8 @@ import sys
 import time
 import json
 
+TEST_FILE_NAME = "test"
+
 TYPES = {
     "simple": [
         {'ioengine': 'libaio', 'rw': 'read', 'blocksize': '4k', 'queues': 64, 'thread': 1},
@@ -65,8 +67,8 @@ parser = argparse.ArgumentParser(description='磁盘测速工具')
 parser.add_argument('-l', '--language', type=str, default='zh', help='语言 (en/zh), 默认 zh')
 parser.add_argument('-p', '--path', type=str, default=None, help='测试路径, 默认 ./')
 parser.add_argument('-t', '--type', type=str, default='simple', help='测试类型 (simple/hdd/ssd), 默认 simple')
-parser.add_argument('-s', '--size', type=str, default='5G', help='测试文件大小, 默认 5G')
-parser.add_argument('-T', '--times', type=int, default=1, help='测试次数, 默认 1')
+parser.add_argument('-s', '--size', type=str, default='1G', help='测试文件大小, 默认 5G')
+parser.add_argument('-T', '--times', type=int, default=5, help='测试次数, 默认 1')
 parser.add_argument('-m', '--mode', type=str, default='average', help='测试模式 (best/average), 默认 average')
 args = parser.parse_args()
 
@@ -128,7 +130,7 @@ def get_speed_from_json(json_str):
 
 def create_fio_job(ioengine='libaio', blocksize='1M', thread=1, queues=1, rw='read'):
     name = f"{get_rw_mode_string(rw)}_{blocksize}_Q{queues}_T{thread}"
-    command = f"fio --name={name} --filename=test --gtod_reduce=1 --ioengine={ioengine} --size={{size}} --direct=1 --output-format=json --rw={rw} --bs={blocksize} --numjobs={thread} --iodepth={queues}"
+    command = f"fio --name={name} --filename={TEST_FILE_NAME} --gtod_reduce=1 --ioengine={ioengine} --size={{size}} --direct=1 --output-format=json --rw={rw} --bs={blocksize} --numjobs={thread} --iodepth={queues}"
     name = name.replace("_", " ")
     return name, command
 
@@ -183,8 +185,14 @@ def main():
 
     print(",".join([str(speed) for speed in result]))
 
+def delete_test_file():
+    command = f"rm -f {TEST_FILE_NAME}"
+    subprocess.run(command, shell=True)  # Remove test file
+
 if __name__ == '__main__':
     try:
         main()
     except KeyboardInterrupt:
         print(msg['stop_test'])
+    finally:
+        delete_test_file()
