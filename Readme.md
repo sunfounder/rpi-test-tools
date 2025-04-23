@@ -26,12 +26,12 @@ DS18B20需要在Raspi config 里面打开1-wire
 
 可以先试试DHT11 能不能正常工作：
 ```bash
-sudo python3 test/dht11-test.py -p 18 -m dht11
+sudo python3 rpi-test-tools/test/dht11-test.py -p 18 -m dht11
 ```
 
 或者试试DS18B20能不能正常工作
 ```bash
-sudo python3 test/ds18b20-test.py
+sudo python3 rpi-test-tools/test/ds18b20-test.py
 ```
 
 开始测试，记得把.dat 改成合适的描述这个测试的名字。
