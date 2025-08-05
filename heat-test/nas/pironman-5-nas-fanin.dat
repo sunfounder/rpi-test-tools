@@ -531,7 +531,7 @@ cpu frequency:
 - 2400.02048
 - 2400.03712
 - 1600.023552
-name: 'Pironman 5 NAS With SSD '
+name: 'Pironman 5 NAS FANIN '
 temperature:
 - 59.3
 - 58.2
